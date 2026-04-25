@@ -25,3 +25,23 @@ FROM orders
 WHERE order_date IS NOT NULL
 GROUP BY DATETRUNC(MONTH, order_date)
 ORDER BY order_month;
+
+
+/* =========================================
+   Running Total Revenue
+   Description: Cumulative revenue over time
+========================================= */
+
+SELECT
+    order_month,
+    total_revenue,
+    SUM(total_revenue) OVER (ORDER BY order_month) AS running_total_revenue
+FROM (
+    SELECT
+        DATETRUNC(MONTH, order_date) AS order_month,
+        SUM(sales_amount) AS total_revenue
+    FROM orders
+    WHERE order_date IS NOT NULL
+    GROUP BY DATETRUNC(MONTH, order_date)
+) t
+ORDER BY order_month;

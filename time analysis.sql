@@ -45,3 +45,35 @@ FROM (
     GROUP BY DATETRUNC(MONTH, order_date)
 ) t
 ORDER BY order_month;
+
+
+/* =========================================
+   Month-over-Month Revenue Change
+Description:
+   Calculates monthly revenue, previous month revenue,
+   and revenue change using window functions.
+========================================= */
+
+WITH monthly_revenue AS (
+    SELECT
+        DATETRUNC(MONTH, order_date) AS order_month,
+        SUM(sales_amount) AS total_revenue
+    FROM orders
+    WHERE order_date IS NOT NULL
+    GROUP BY DATETRUNC(MONTH, order_date)
+),
+revenue_lag AS (
+    SELECT
+        order_month,
+        total_revenue,
+        LAG(total_revenue) OVER (ORDER BY order_month) AS previous_month_revenue
+    FROM monthly_revenue
+)
+
+SELECT
+    order_month,
+    total_revenue,
+    previous_month_revenue,
+    total_revenue - previous_month_revenue AS revenue_change
+FROM revenue_lag
+ORDER BY order_month;

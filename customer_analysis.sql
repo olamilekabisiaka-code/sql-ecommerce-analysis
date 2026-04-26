@@ -14,7 +14,6 @@ GROUP BY c.customer_name;
 
 
 /* =========================================
-   File: 02_customer_analysis.sql
    Section: High-Value Customers
 
    Description:
@@ -87,7 +86,6 @@ ORDER BY total_spending DESC;
 
 
 /* =========================================
-   File: 02_customer_analysis.sql
    Section: Customer Product Diversity
 
    Description:
@@ -105,3 +103,41 @@ WHERE o.order_date IS NOT NULL
 GROUP BY c.customer_name
 HAVING COUNT(DISTINCT o.product_id) > 3
 ORDER BY number_of_products DESC;
+
+
+/* =========================================
+   Section: Above Country Average Spending
+
+   Description:
+   Finds customers whose total spending is
+   higher than the average spending of customers
+   within the same country.
+========================================= */
+
+WITH customer_spending AS (
+    SELECT
+        c.customer_id,
+        c.customer_name,
+        c.country,
+        SUM(o.sales_amount) AS total_spending
+    FROM customers c
+    JOIN orders o
+        ON c.customer_id = o.customer_id
+    WHERE o.order_date IS NOT NULL
+    GROUP BY
+        c.customer_id,
+        c.customer_name,
+        c.country
+)
+
+SELECT
+    cs.customer_name,
+    cs.country,
+    cs.total_spending
+FROM customer_spending cs
+WHERE cs.total_spending > (
+    SELECT AVG(cs2.total_spending)
+    FROM customer_spending cs2
+    WHERE cs2.country = cs.country
+)
+ORDER BY cs.total_spending DESC;

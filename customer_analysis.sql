@@ -84,3 +84,24 @@ SELECT
     END AS customer_segment
 FROM customer_spending
 ORDER BY total_spending DESC;
+
+
+/* =========================================
+   File: 02_customer_analysis.sql
+   Section: Customer Product Diversity
+
+   Description:
+   Identifies customers who have purchased
+   more than 3 distinct products.
+========================================= */
+
+SELECT
+    c.customer_name,
+    COUNT(DISTINCT o.product_id) AS number_of_products
+FROM customers c
+JOIN orders o
+    ON c.customer_id = o.customer_id
+WHERE o.order_date IS NOT NULL
+GROUP BY c.customer_name
+HAVING COUNT(DISTINCT o.product_id) > 3
+ORDER BY number_of_products DESC;

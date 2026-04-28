@@ -56,3 +56,34 @@ SELECT
 FROM ranked_products
 WHERE product_rank <= 3
 ORDER BY product_rank, total_revenue DESC;
+
+
+/* =========================================
+   Section: Category Revenue Contribution
+
+   Description:
+   Calculates total revenue per category and
+   its percentage contribution to overall sales.
+
+========================================= */
+
+WITH category_sales AS (
+    SELECT
+        p.category,
+        SUM(o.sales_amount) AS total_revenue
+    FROM products p
+    JOIN orders o
+        ON p.product_id = o.product_id
+    WHERE o.order_date IS NOT NULL
+    GROUP BY p.category
+)
+
+SELECT
+    category,
+    total_revenue,
+    ROUND(
+        (total_revenue * 100.0) / SUM(total_revenue) OVER(),
+        2
+    ) AS percentage_of_total
+FROM category_sales
+ORDER BY total_revenue DESC;
